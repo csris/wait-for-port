@@ -1,0 +1,73 @@
+#! /bin/bash
+
+PORT=22
+INTERVAL=5
+
+usage() {
+	echo "usage: $0 [-p PORT] [-i INTERVAL] HOST" 1>&2
+	exit 1
+}
+
+print_help() {
+	local wait_for_port=$0
+
+	echo
+	cat <<- EOF
+		${wait_for_port} is a simple script that waits for a port on a
+		host to start accepting connections. It polls for the
+		configured interval until it successfully connects to the host.
+
+		Usage:
+		  ${wait_for_port} [-p PORT] [-i INTERVAL] HOST
+
+		Flags and Arguments:
+		  -p    the port to connect to (default: ${PORT})
+		  -i    the polling interval (default: ${INTERVAL})
+		  HOST  the host to connect to
+	EOF
+	echo
+
+	exit 1
+}
+
+poll_host() {
+	local host=$1
+	local port=$2
+	local interval=$3
+
+	while ! nc -z -w ${interval} ${host} ${port}
+	do 
+		: # do nothing
+	done
+}
+
+parse_args() {
+	while getopts "p:i:h" o; do
+		case "${o}" in
+			i)
+				INTERVAL=${OPTARG}
+				;;
+			p)
+				PORT=${OPTARG}
+				;;
+			h)
+				print_help
+				;;
+			*)
+				usage
+				;;
+		esac
+	done
+	shift $((OPTIND-1))
+
+	if (( $# != 1 ))
+	then
+		usage
+		exit 1
+	fi
+
+	HOST=$1
+}
+
+parse_args "$@"
+poll_host ${HOST} ${PORT} ${INTERVAL}
