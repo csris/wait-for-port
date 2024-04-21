@@ -10,7 +10,6 @@ I often reboot a server and have to wait for it to accept SSH connections so I c
 
 
 # Getting Started
----
 
 1. Install wait-for-port using Homebrew
 
